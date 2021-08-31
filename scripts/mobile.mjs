@@ -2,9 +2,22 @@ export default class MobileGame {
   constructor(ws) {
     this.ws = ws;
     this.listenToMove = false;
+    this.playerReady = false;
 
     this.checkIcons(false);
-    this.initWsMessage();
+    this.initUI();
+  }
+
+  initUI() {
+    document.getElementById('error-message').style.display = '';
+    document.getElementById('username').addEventListener('keyup', (event) => {
+      if (event.key === 'Enter') {
+        document.getElementById('error-message').style.display = 'none';
+        document.getElementById('player-name').innerHTML =
+          document.getElementById('username').value;
+        this.initWsMessage();
+      }
+    });
   }
 
   initWsMessage() {

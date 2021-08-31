@@ -3,8 +3,17 @@ import { html, render } from 'https://unpkg.com/lit-html?module';
 export default class Game {
   constructor(ws) {
     this.ws = ws;
+
+    this.initUI();
+
     this.initWS();
     this.initFrontGame();
+  }
+
+  initUI() {
+    document
+      .getElementById('start-button')
+      .addEventListener('click', () => this.ws.send(JSON.stringify({ type: 'start' })));
   }
 
   initWS() {
