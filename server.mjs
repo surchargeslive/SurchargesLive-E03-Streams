@@ -5,29 +5,30 @@ import express from 'express';
 const app = express();
 app.use(express.static('./'));
 
+const port = 8080;
 const server = createServer(app);
 const wss = new WebSocketServer({ server });
 
 let wsGame = undefined;
-let wsPlayers = [];
+const wsPlayers = [];
 
 wss.on('connection', (ws) => {
   console.log('connection', ws._protocol);
   if (ws._protocol === 'game') {
     wsGame = ws;
   } else {
-    wsPlayers.push[{ id: ws._protocol, ws }];
+    wsPlayers.push({ id: ws._protocol, ws });
   }
   ws.on('message', (message) => {
     console.log('received: %s', message);
     const json = JSON.parse(message);
     switch (json.type) {
       case 'data':
-        wsGame.send(message);
+        wsGame.send(JSON.stringify(json));
         break;
       case 'start':
         for (let wsPlayer of wsPlayers) {
-          wsPlayer.ws.send(message);
+          wsPlayer.ws.send(JSON.stringify(json));
         }
 
         break;
@@ -47,6 +48,6 @@ wss.on('connection', (ws) => {
   });
 });
 
-server.listen(8080, () => {
-  console.log('Listen to port 80');
+server.listen(port, () => {
+  console.log(`Listen to port ${port}`);
 });

@@ -1,31 +1,43 @@
+import { Accelerometer } from '../node_modules/motion-sensors-polyfill/motion-sensors.js';
+
 export default class MobileGame {
-  constructor(ws) {
-    this.ws = ws;
+  constructor(wsUrl) {
+    this.wsUrl = wsUrl;
     this.listenToMove = false;
     this.playerReady = false;
+    this.playerId = undefined;
+    this.username = undefined;
 
     this.checkIcons(false);
     this.initUI();
   }
 
   initUI() {
-    document.getElementById('error-message').style.display = '';
+    document.getElementById('error-msg').style.display = '';
     document.getElementById('username').addEventListener('keyup', (event) => {
       if (event.key === 'Enter') {
-        document.getElementById('error-message').style.display = 'none';
-        document.getElementById('player-name').innerHTML =
-          document.getElementById('username').value;
-        this.initWsMessage();
+        this.username = document.getElementById('username').value;
+        document.getElementById('error-msg').style.display = 'none';
+        document.getElementById('player-name').innerHTML = this.username;
+        document.getElementById('username').style.display = 'none';
+        document.getElementById('player-name').style.display = 'block';
+        this.initWS(this.username);
       }
     });
   }
 
-  initWsMessage() {
-    this.ws.onmessage = function (event) {
-      const data = JSON.parse(event.data);
-      if (data.type === 'start') {
-        this.startListen();
-      }
+  initWS(username) {
+    this.playerId = `${username}-${Date.now()}`;
+    this.ws = new WebSocket(this.wsUrl, `mobile-${this.playerId}`);
+    //this.ws.binaryType = 'arraybuffer';
+    this.ws.onmessage = (event) => {
+      try {
+        console.log(event.data);
+        const data = JSON.parse(event.data);
+        if (data.type === 'start') {
+          this.startListen();
+        }
+      } catch (e) {}
     };
   }
 
@@ -33,15 +45,6 @@ export default class MobileGame {
     this.listenToMove = listenToMove;
     document.getElementById('shake-icon').style.display = this.listenToMove ? '' : 'none';
     document.getElementById('wait-icon').style.display = this.listenToMove ? 'none' : '';
-  }
-
-  checkName() {
-    const input = document.getElementById('username');
-    if (input.value) {
-      return 'username' + Date.getTime();
-    } else {
-      return value;
-    }
   }
 
   startListen() {
@@ -60,7 +63,8 @@ export default class MobileGame {
       accelerometer.onreading = (e) => {
         this.ws.send(
           JSON.stringify({
-            user: this.checkName(),
+            type: 'data',
+            user: { playerId: this.playerId, username: this.username },
             datas: { x: accelerometer.x, y: accelerometer.y, z: accelerometer.z },
           }),
         );

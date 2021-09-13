@@ -2,30 +2,20 @@ import Game from './game.mjs';
 import MobileGame from './mobile.mjs';
 
 function isMobile() {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  return !window.matchMedia('(min-width: 600px)').matches;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   const schema = location.protocol === 'http:' ? 'ws' : 'wss';
-  const mobileView = isMobile();
-  const ws = new WebSocket(`${schema}://${location.host}`, mobileView ? 'mobile' : 'game');
+  const wsUrl = `${schema}://${location.host}`;
 
-  function wsReadyState() {
-    if (ws.readyState === 1) {
-      //match correct script to play
-      if (isMobile()) {
-        new MobileGame(ws);
-        document.getElementById('mobile-main').style.display = 'block';
-        console.log('Mobile way');
-      } else {
-        new Game(ws);
-        document.getElementById('game-main').style.display = 'block';
-        console.log('Game screen');
-      }
-    } else if (ws.readyState === 0) {
-      setTimeout(() => wsReadyState(), 0);
-    }
+  if (isMobile()) {
+    new MobileGame(wsUrl);
+    document.getElementById('mobile-main').style.display = 'flex';
+    console.log('Mobile way');
+  } else {
+    new Game(wsUrl);
+    document.getElementById('game-main').style.display = 'flex';
+    console.log('Game screen');
   }
-
-  wsReadyState();
 });

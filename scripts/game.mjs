@@ -1,8 +1,8 @@
 import { html, render } from 'https://unpkg.com/lit-html?module';
 
 export default class Game {
-  constructor(ws) {
-    this.ws = ws;
+  constructor(wsUrl) {
+    this.wsUrl = wsUrl;
 
     this.initUI();
 
@@ -17,11 +17,15 @@ export default class Game {
   }
 
   initWS() {
-    this.ws.onmessage = function (event) {
-      const data = JSON.parse(event.data);
-      if (data.type === 'data') {
-        //TODO
-      }
+    this.ws = new WebSocket(this.wsUrl, 'game');
+    this.ws.binaryType = 'arraybuffer';
+    this.ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'data') {
+          console.log('data', data);
+        }
+      } catch (e) {}
     };
   }
 
