@@ -1,6 +1,7 @@
 import { WebSocketServer } from 'ws';
 import { createServer } from 'http';
 import express from 'express';
+import { GAME_DURATION, FREQUENCY_SENSOR, NB_MOCK_PLAYERS } from './scripts/constants.mjs';
 
 const app = express();
 app.use(express.static('./'));
@@ -28,12 +29,11 @@ wss.on('connection', (ws) => {
         wsGame.send(JSON.stringify(json));
         break;
       case 'start':
-        if (!mock) {
-          for (let wsPlayer of wsPlayers) {
-            wsPlayer.ws.send(JSON.stringify(json));
-          }
-        } else {
+        if (mock) {
           mockServer();
+        }
+        for (let wsPlayer of wsPlayers) {
+          wsPlayer.ws.send(JSON.stringify(json));
         }
 
         break;
@@ -56,12 +56,10 @@ server.listen(port, () => {
 });
 
 function mockServer() {
-  const DURATION = 5000;
-  const NB_PLAYERS = 50;
   let startMockDatas = Date.now();
 
   function sendMockData() {
-    for (let i = 0; i < NB_PLAYERS; i++) {
+    for (let i = 0; i < NB_MOCK_PLAYERS; i++) {
       wsGame.send(
         JSON.stringify({
           type: 'data',
@@ -70,8 +68,8 @@ function mockServer() {
         }),
       );
     }
-    if (Date.now() - startMockDatas < DURATION) {
-      setTimeout(sendMockData, 10);
+    if (Date.now() - startMockDatas < GAME_DURATION) {
+      setTimeout(sendMockData, FREQUENCY_SENSOR);
     }
   }
   sendMockData();

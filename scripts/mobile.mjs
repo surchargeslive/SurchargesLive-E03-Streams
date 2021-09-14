@@ -1,4 +1,5 @@
 import { Accelerometer } from '../node_modules/motion-sensors-polyfill/motion-sensors.js';
+import { FREQUENCY_SENSOR, GAME_DURATION } from './constants.mjs';
 
 export default class MobileGame {
   constructor(wsUrl) {
@@ -10,7 +11,6 @@ export default class MobileGame {
 
     this.checkIcons(false);
     this.initUI();
-    this.TIMING_GAME = 5000;
   }
 
   initUI() {
@@ -52,7 +52,7 @@ export default class MobileGame {
     this.checkIcons(true);
     let accelerometer = null;
     try {
-      accelerometer = new Accelerometer({ frequency: 10 });
+      accelerometer = new Accelerometer({ frequency: FREQUENCY_SENSOR });
       accelerometer.onerror = (event) => {
         // Handle runtime errors.
         if (event.error.name === 'NotAllowedError') {
@@ -74,7 +74,7 @@ export default class MobileGame {
       setTimeout(() => {
         accelerometer.stop();
         this.checkIcons(false);
-      }, this.TIMING_GAME);
+      }, GAME_DURATION);
     } catch (error) {
       // Handle construction errors.
       if (error.name === 'SecurityError') {
