@@ -10,6 +10,7 @@ export default class MobileGame {
 
     this.checkIcons(false);
     this.initUI();
+    this.TIMING_GAME = 5000;
   }
 
   initUI() {
@@ -73,7 +74,7 @@ export default class MobileGame {
       setTimeout(() => {
         accelerometer.stop();
         this.checkIcons(false);
-      }, 1000);
+      }, this.TIMING_GAME);
     } catch (error) {
       // Handle construction errors.
       if (error.name === 'SecurityError') {

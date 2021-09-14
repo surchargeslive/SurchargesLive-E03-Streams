@@ -5,6 +5,7 @@ import express from 'express';
 const app = express();
 app.use(express.static('./'));
 
+const mock = true;
 const port = 8080;
 const server = createServer(app);
 const wss = new WebSocketServer({ server });
@@ -27,15 +28,17 @@ wss.on('connection', (ws) => {
         wsGame.send(JSON.stringify(json));
         break;
       case 'start':
-        for (let wsPlayer of wsPlayers) {
-          wsPlayer.ws.send(JSON.stringify(json));
+        if (!mock) {
+          for (let wsPlayer of wsPlayers) {
+            wsPlayer.ws.send(JSON.stringify(json));
+          }
+        } else {
+          mockServer();
         }
 
         break;
     }
   });
-
-  //ws.send(JSON.stringify({ data: 'something' }));
 
   ws.on('close', function () {
     if (ws._protocol === 'game') {
@@ -51,3 +54,25 @@ wss.on('connection', (ws) => {
 server.listen(port, () => {
   console.log(`Listen to port ${port}`);
 });
+
+function mockServer() {
+  const DURATION = 5000;
+  const NB_PLAYERS = 50;
+  let startMockDatas = Date.now();
+
+  function sendMockData() {
+    for (let i = 0; i < NB_PLAYERS; i++) {
+      wsGame.send(
+        JSON.stringify({
+          type: 'data',
+          user: { playerId: `mockPlayerId-${i}`, username: `mockPlayer-${i}` },
+          datas: { x: Math.random() * 10, y: 0, z: 0 },
+        }),
+      );
+    }
+    if (Date.now() - startMockDatas < DURATION) {
+      setTimeout(sendMockData, 10);
+    }
+  }
+  sendMockData();
+}
