@@ -1,6 +1,3 @@
-import { Accelerometer } from '../node_modules/motion-sensors-polyfill/motion-sensors.js';
-import { FREQUENCY_SENSOR, GAME_DURATION } from './constants.mjs';
-
 /**
  * Class that deal with mobile logic
  */
@@ -82,44 +79,5 @@ export default class MobileGame {
   startListen() {
     // We ask to show the shake icon
     this.checkIcons(true);
-    // We init the accelerometer
-    let accelerometer = null;
-    try {
-      accelerometer = new Accelerometer({ frequency: FREQUENCY_SENSOR });
-      accelerometer.onerror = (event) => {
-        // Handle runtime errors.
-        if (event.error.name === 'NotAllowedError') {
-          console.log('Permission to access sensor was denied.');
-        } else if (event.error.name === 'NotReadableError') {
-          console.log('Cannot connect to the sensor.');
-        }
-      };
-      accelerometer.onreading = (e) => {
-        // On each event, we send the informations to server
-        this.ws.send(
-          JSON.stringify({
-            type: 'data',
-            user: { playerId: this.playerId, username: this.username },
-            datas: { x: accelerometer.x, y: accelerometer.y, z: accelerometer.z },
-          }),
-        );
-      };
-      // When everything is set, we activate the accelerometer
-      accelerometer.start();
-      // We kill the accelerometer after a timeout (it's the purose of game)
-      setTimeout(() => {
-        accelerometer.stop();
-        this.checkIcons(false);
-      }, GAME_DURATION);
-    } catch (error) {
-      // Handle construction errors.
-      if (error.name === 'SecurityError') {
-        console.log('Sensor construction was blocked by the Permissions Policy.');
-      } else if (error.name === 'ReferenceError') {
-        console.log('Sensor is not supported by the User Agent.');
-      } else {
-        throw error;
-      }
-    }
   }
 }

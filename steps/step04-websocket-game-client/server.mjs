@@ -1,9 +1,7 @@
 import { WebSocketServer } from 'ws';
 import { createServer } from 'http';
 import express from 'express';
-import { GAME_DURATION, FREQUENCY_SENSOR, NB_MOCK_PLAYERS } from './scripts/constants.mjs';
 
-const mock = true; // True if we want to generate mock players
 const port = 8080; // Port of application
 let wsGame = undefined; // Websocket corresponding to game screen
 const wsPlayers = []; // Array of Websockets players
@@ -35,9 +33,6 @@ wss.on('connection', (ws) => {
         wsGame.send(JSON.stringify(json));
         break;
       case 'start':
-        if (mock) {
-          mockServer();
-        }
         for (let wsPlayer of wsPlayers) {
           wsPlayer.ws.send(JSON.stringify(json));
         }
@@ -64,30 +59,3 @@ wss.on('connection', (ws) => {
 server.listen(port, () => {
   console.log(`Listen to port ${port}`);
 });
-
-/**
- * Mock Players
- */
-function mockServer() {
-  // Mandatory to only generate datas for a short time
-  let startMockDatas = Date.now();
-
-  /**
-   * function call each time we send a bench of datas
-   */
-  function sendMockData() {
-    for (let i = 0; i < NB_MOCK_PLAYERS; i++) {
-      wsGame.send(
-        JSON.stringify({
-          type: 'data',
-          user: { playerId: `mockPlayerId-${i}`, username: `mockPlayer-${i}` },
-          datas: { x: Math.random() * 10, y: 0, z: 0 },
-        }),
-      );
-    }
-    if (Date.now() - startMockDatas < GAME_DURATION) {
-      setTimeout(sendMockData, FREQUENCY_SENSOR);
-    }
-  }
-  sendMockData();
-}

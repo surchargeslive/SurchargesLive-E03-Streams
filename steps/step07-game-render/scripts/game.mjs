@@ -25,8 +25,7 @@ export default class Game {
     document.getElementById('start-button').addEventListener('click', () => {
       this.ws.send(JSON.stringify({ type: 'start' }));
       // According to the mode we use, we will init the websocket listen process or the stream process
-      this.initStream(this.ws);
-      //this.listenWS(this.ws);
+      this.listenWS(this.ws);
     });
   }
 
@@ -49,50 +48,6 @@ export default class Game {
         this.processPlayerData(data);
       } catch (e) {}
     };
-  }
-
-  /**
-   * Listen to input messages and just queue them in a stream to process data according to read of stream
-   *
-   * @param ws the websocket to listen
-   */
-  initStream(ws) {
-    this.stream = new ReadableStream({
-      start(controller) {
-        // We stop the stream even if new messages comes to deal wit backpressure
-        setTimeout(() => controller.close(), GAME_DURATION + 500);
-        // On each message, we queue it in the stream
-        ws.onmessage = (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            if (data.type === 'data') {
-              controller.enqueue(event.data);
-            }
-          } catch (e) {}
-        };
-      },
-      pull(controller) {},
-      cancel() {},
-    });
-
-    // At the same moment we init the stream, we read it on the other side to create a read/write stream of events
-    this.reader = this.stream.getReader();
-    this.reader.read().then(this.readPlayerData.bind(this));
-  }
-
-  /**
-   * Read chunks of datas and process them
-   *
-   * @param param0 a chunck datas of stream
-   * @returns a new call if there is still data to read
-   */
-  readPlayerData({ done, value }) {
-    if (done) return;
-    try {
-      const data = JSON.parse(value);
-      this.processPlayerData(data);
-    } catch (e) {}
-    return this.reader.read().then(this.readPlayerData.bind(this));
   }
 
   /**

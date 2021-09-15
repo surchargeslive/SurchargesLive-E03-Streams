@@ -1,10 +1,5 @@
 import Game from './game.mjs';
-import MobileGame from './mobile.mjs';
 
-/**
- *
- * @returns true if media queries detection as a width less than 600px
- */
 function isMobile() {
   return !window.matchMedia('(min-width: 600px)').matches;
 }
@@ -16,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // According to screen detection, we show the correct part on screen
   if (isMobile()) {
-    new MobileGame(wsUrl);
     document.getElementById('mobile-main').style.display = 'flex';
     console.log('Mobile way');
   } else {
