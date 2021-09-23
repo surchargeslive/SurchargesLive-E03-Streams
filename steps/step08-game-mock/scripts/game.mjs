@@ -12,6 +12,10 @@ export default class Game {
     this.players = [];
     // Reference to deal with UI refresh frame rate
     this.lastTimeRefresh = Date.now();
+    // True if we continue to process events from websocket
+    this.continueWS = true;
+    // Number of events processed
+    this.dataProcessed = 0;
 
     this.initUI();
     this.initWS();
@@ -23,6 +27,8 @@ export default class Game {
    */
   initUI() {
     document.getElementById('start-button').addEventListener('click', () => {
+      this.dataProcessed = 0;
+      this.continueWS = true;
       this.ws.send(JSON.stringify({ type: 'start' }));
       // According to the mode we use, we will init the websocket listen process or the stream process
       this.listenWS(this.ws);
@@ -42,11 +48,17 @@ export default class Game {
    * @param ws the websocket to listen
    */
   listenWS(ws) {
+    setTimeout(() => {
+      console.log('Data processed', this.dataProcessed + 1);
+      this.continueWS = false;
+    }, GAME_DURATION + 500);
     ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        this.processPlayerData(data);
-      } catch (e) {}
+      if (this.continueWS) {
+        try {
+          const data = JSON.parse(event.data);
+          this.processPlayerData(data);
+        } catch (e) {}
+      }
     };
   }
 
@@ -67,6 +79,7 @@ export default class Game {
         this.players.push(player);
       }
       player.score += Math.abs(data.datas.x);
+      this.dataProcessed++;
     }
   }
 
@@ -112,7 +125,14 @@ export default class Game {
     return html`${players.map(
       (player) => html`<div class="player">
         <label>${player.name}:${Math.round(player.score)}</label>
-        <meter min="0" max="${max}" low="${low}" high="${high}" value=${player.score}></meter>
+        <meter
+          min="0"
+          max="${max}"
+          optimum="${max}"
+          low="${low}"
+          high="${high}"
+          value=${player.score}
+        ></meter>
       </div>`,
     )}`;
   }

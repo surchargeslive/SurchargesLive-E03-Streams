@@ -345,7 +345,7 @@ On va utiliser pour ça un truc de Fugu -> **C'est quoi Fugu**. Mais ça marche 
 On va commencer à introduire des magic numbers -> constants.mjs
 
 ```javascript
-export const GAME_DURATION = 5000 * 10;
+export const GAME_DURATION = 5000 * 4;
 export const FREQUENCY_SENSOR = 10;
 ```
 
@@ -449,7 +449,22 @@ import { DELAY_REFRESH_UI, GAME_DURATION, HIGH_SCORE } from './constants.mjs';
 // Dans le constructor - ajout de variables + appel de méthode d'init
 this.players = [];
 this.lastTimeRefresh = Date.now();
+// True if we continue to process events from websocket
+this.continueWS = true;
+// Number of events processed
+this.dataProcessed = 0;
 this.initFrontGame();
+
+// Changement méthode initUI -> Ajout dataProcessed
+initUI() {
+    document.getElementById('start-button').addEventListener('click', () => {
+      this.dataProcessed = 0;
+      this.continueWS = true;
+      this.ws.send(JSON.stringify({ type: 'start' }));
+      // According to the mode we use, we will init the websocket listen process or the stream process
+      this.listenWS(this.ws);
+    });
+  }
 
 // Changement du coeur de la méthode processPlayerData
 processPlayerData(data) {
@@ -464,8 +479,25 @@ processPlayerData(data) {
         this.players.push(player);
         }
         player.score += Math.abs(data.datas.x);
+        this.dataProcessed++;
     }
 }
+
+// Modif méthode listen Websockets
+listenWS(ws) {
+    setTimeout(() => {
+      console.log('Data processed', this.dataProcessed + 1);
+      this.continueWS = false;
+    }, GAME_DURATION + 500);
+    ws.onmessage = (event) => {
+      if (this.continueWS) {
+        try {
+          const data = JSON.parse(event.data);
+          this.processPlayerData(data);
+        } catch (e) {}
+      }
+    };
+  }
 
 // Ajout des méthodes de rendu
   initFrontGame() {
@@ -493,7 +525,7 @@ processPlayerData(data) {
     return html`${players.map(
       (player) => html`<div class="player">
         <label>${player.name}:${Math.round(player.score)}</label>
-        <meter min="0" max="${max}" low="${low}" high="${high}" value=${player.score}></meter>
+        <meter min="0" max="${max}"  optimum="${max}" low="${low}" high="${high}" value=${player.score}></meter>
       </div>`,
     )}`;
   }
@@ -589,7 +621,10 @@ initUI() {
   }
 
   readPlayerData({ done, value }) {
-    if (done) return;
+     if (done) {
+      console.log('Data processed', this.dataProcessed);
+      return;
+    }
     try {
       const data = JSON.parse(value);
       this.processPlayerData(data);
