@@ -6,7 +6,7 @@ To start : `npm i` then `node server.mjs`
 
 You should use at least Node 14 to run this project.
 
-# Step 01
+# Step 01 - JFG
 
 ## Création du Serveur.
 
@@ -20,6 +20,8 @@ import { createServer } from 'http';
 import express from 'express';
 
 const port = 8080;
+const app = express();
+app.use(express.static('./'));
 const server = createServer(app);
 const wss = new WebSocketServer({ server });
 
@@ -28,7 +30,7 @@ server.listen(port, () => {
 });
 ```
 
-# Step 02
+# Step 02 - Horacio
 
 ## Création du fichier index.html & fichier app.mjs
 
@@ -75,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 ```
 
-# Step 03
+# Step 03 - Horacio
 
 ## Mise en place de la logique websocket serveur
 
@@ -124,7 +126,7 @@ wss.on('connection', (ws) => {
 });
 ```
 
-# Step 04
+# Step 04 - JFG
 
 ## Branchement des websockets côté game
 
@@ -200,7 +202,7 @@ export default class Game {
 }
 ```
 
-# Step 05
+# Step 05 - Horacio
 
 ## Gestion de la websocket côté mobile (pas encore envoie de données). On branche la logique
 
@@ -331,7 +333,7 @@ if (isMobile()) {
 }
 ```
 
-# Step 06
+# Step 06 - JFG
 
 ## Utilisation de l'accelerometer
 
@@ -393,7 +395,7 @@ startListen() {
   }
 ```
 
-# Step07
+# Step07 - Horacio
 
 ## Gestion de l'affichage des players
 
@@ -401,6 +403,15 @@ Afin de pas s'embêter avec le rendu, on va utiliser litHTML pour notre rendu. O
 afin de l'afficher et de trier notre liste.
 
 Ici on modifie le css pour ajouter les derniers styles. On modifie aussi les constantes et surtout game.mjs
+
+### index.html
+
+```html
+<main id="game-main" style="display: none">
+  <button id="start-button">start</button>
+  <section id="players-data"></section>
+</main>
+```
 
 ### main.css
 
@@ -488,7 +499,7 @@ processPlayerData(data) {
   }
 ```
 
-# Step 08
+# Step 08 - JFG
 
 ## Création de user mocked pour tester le tout
 
@@ -537,7 +548,7 @@ case 'start':
     }
 ```
 
-# Step09
+# Step09 - Horacio (+déploiement)
 
 ## Mise en place d'un stream côté client à la place de l'écoute passive -> objective plus de tuning dans la réception
 
