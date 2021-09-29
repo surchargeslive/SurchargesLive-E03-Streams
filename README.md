@@ -30,6 +30,8 @@ server.listen(port, () => {
 });
 ```
 
+Comments during the coding: If you don't like the `.mjs` (I detest it!) you can simply add a `package.json` and set `"type":"module"` on it.
+
 # Step 02 - Horacio
 
 ## Création du fichier index.html & fichier app.mjs
